@@ -28,21 +28,24 @@ app.post('/add-torrent', (req, res) => {
     }
   
     client.add(magnetURI, (torrent) => {
-      console.log(`Torrent added: ${torrent.name}`);
   
-      // Collect metadata
-      const files = torrent.files.map(file => ({
-        name: file.name,
-        size: file.length,
-      }));
-  
-      res.json({
-        name: torrent.name,
-        files,
-        infoHash: torrent.infoHash,
-      });
+      const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
+      if (!file) return res.status(404).json({ error: "No video file found" });
+
+      const videoURL = `http://localhost:5000/stream/${torrent.infoHash}`;
+      res.json({ name : file.name, size: file.length, videoURL });
+      
     });
   });
+
+  app.get("/stream/:hash", async (req, res) => {
+    const torrent = await client.get(req.params.hash);
+    if (!torrent) return res.status(404).json({ error: "Torrent not found" });
+
+    const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
+    res.setHeader("Content-Type", "video/mkv");
+    file.createReadStream().pipe(res);
+});
   
 
 const PORT = process.env.PORT || 5000;
