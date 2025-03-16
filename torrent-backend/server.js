@@ -32,8 +32,24 @@ app.post('/add-torrent', (req, res) => {
       const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
       if (!file) return res.status(404).json({ error: "No video file found" });
 
-      const videoURL = `http://localhost:5000/stream/${torrent.infoHash}`;
-      res.json({ name : file.name, size: file.length, videoURL });
+      res.json({ name : file.name, size: file.length, infoHash });
+      
+    });
+  });
+
+app.post('/download-torrent', (req, res) => {
+    const { magnetURI } = req.body;
+    
+    if (!magnetURI) {
+      return res.status(400).json({ error: 'Magnet URI is required' });
+    }
+  
+    client.add(magnetURI, (torrent) => {
+  
+      const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
+      if (!file) return res.status(404).json({ error: "No video file found" });
+
+      res.json({ name : file.name, size: file.length, infoHash });
       
     });
   });
