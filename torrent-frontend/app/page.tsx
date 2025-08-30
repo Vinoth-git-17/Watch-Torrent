@@ -2,11 +2,11 @@
 import { useRef, useState } from "react";
 import { Card } from "./components/Card";
 import { CardContent } from "./components/CardContent";
-import { Input } from "./components/Input";
 import { Button } from "./components/Button";
 import { useSpinner } from "./context/SpinnerProvider";
-import Stream from "./stream/page";
 import Link from "next/link";
+import { Input } from "./components/Input";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [details, setDetails] = useState<{
@@ -20,16 +20,15 @@ export default function Home() {
   });
   const inputRef = useRef<HTMLInputElement>(null);
   const { showSpinner, hideSpinner } = useSpinner();
+ const toast = useToast()
 
   const serverURL = "http://localhost:5000/"
-    // Getting link from input value
- const magnetLinkUrl = inputRef.current?.value ?? undefined;
+
 
   async function handleSubmit(e: any) {
     e.preventDefault();
-
-
-
+    // Getting link from input value
+    const magnetLinkUrl = inputRef.current?.value ?? undefined;
     if (!magnetLinkUrl) {
       alert("Please enter the magnet link");
       return;
@@ -59,15 +58,19 @@ export default function Home() {
         console.error("Failed to send magnet link:", response.statusText);
       }
     } catch (error) {
+      toast.toast({
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your request.",
+      })
       console.error("Error sending magnet link:", error);
     }
     hideSpinner();
 
-    // Clear the input field value
-    if (inputRef.current) inputRef.current.value = "";
   }
 
  async function handleDownload() {
+      // Getting link from input value
+ const magnetLinkUrl = inputRef.current?.value ?? undefined;
     try {
       showSpinner();
       const response = await fetch(serverURL + "download-torrent", {
@@ -121,7 +124,7 @@ export default function Home() {
           </form>
         </CardContent>
       </Card>
-      {/* {details.infoHash && ( */}
+      {details.infoHash && (
         <Card className="max-w-md w-full shadow-lg rounded-2xl bg-white p-6 mt-6">
           <CardContent className="flex flex-col gap-4">
             <h2 className="text-xl font-semibold text-gray-800">
@@ -147,7 +150,7 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
-      {/* )} */}
+       )} 
       
     </div>
   );

@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster";
 import { SpinnerProvider } from "./context/SpinnerProvider";
 import "./globals.css";
 import { Inter } from 'next/font/google';
@@ -21,6 +22,7 @@ export default function RootLayout({
       >
         <SpinnerProvider>
         {children}
+        <Toaster />
         </SpinnerProvider>
       </body>
     </html>
