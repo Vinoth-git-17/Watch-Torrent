@@ -27,16 +27,26 @@ app.post('/add-torrent', (req, res) => {
       return res.status(400).json({ error: 'Magnet URI is required' });
     }
   
-    client.add(magnetURI, (torrent) => {
-  
-      const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
-      if (!file) return res.status(404).json({ error: "No video file found" });
+    const torrent = client.add(magnetURI, { announce: true });
 
-      res.json({ name : file.name, size: file.length, infoHash });
-      
+    torrent.on('metadata', () => {
+      // Torrent is valid, and metadata is available
+      const details = {
+        name: torrent.name,
+        infoHash: torrent.infoHash,
+        size: torrent.length,
+      };
+      res.json(details);
     });
-  });
 
+    torrent.on('error', (err) => {
+      // Handle errors, such as invalid magnet URI
+      res.json({ error: `Failed to fetch torrent metadata: ${err.message}`});
+    })
+
+  })
+
+  // TODO: Need to implement download torrent file
 app.post('/download-torrent', (req, res) => {
     const { magnetURI } = req.body;
     
@@ -49,7 +59,7 @@ app.post('/download-torrent', (req, res) => {
       const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
       if (!file) return res.status(404).json({ error: "No video file found" });
 
-      res.json({ name : file.name, size: file.length, infoHash });
+      res.json({ name : file.name, size: file.length });
       
     });
   });
@@ -59,8 +69,36 @@ app.post('/download-torrent', (req, res) => {
     if (!torrent) return res.status(404).json({ error: "Torrent not found" });
 
     const file = torrent.files.find(f => f.name.endsWith(".mp4") || f.name.endsWith(".mkv"));
-    res.setHeader("Content-Type", "video/mkv");
-    file.createReadStream().pipe(res);
+    if (!file) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    const range = req.headers.range;
+    if (!range) {
+      return res.status(400).send("Requires Range header");
+    }
+
+    const positions = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(positions[0], 10);
+    const total = file.length;
+    const end = positions[1] ? parseInt(positions[1], 10) : total - 1;
+    const chunksize = end - start + 1;
+
+    res.writeHead(200, {
+      'Content-Type': file.name.endsWith('.mp4') ? 'video/mp4' : 'video/mkv',
+    });
+
+    const stream = file.createReadStream({ start, end });
+
+    stream.on('error', (streamErr) => {
+      console.error('Stream error:', streamErr);
+      res.end(streamErr);
+    });
+
+    stream.pipe(res);
+
+    res.on('close', () => {
+      stream.destroy(); // Ensure stream is destroyed if response is closed
+    });
 });
   
 
