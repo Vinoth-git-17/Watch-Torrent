@@ -20,10 +20,9 @@ export default function Home() {
   });
   const inputRef = useRef<HTMLInputElement>(null);
   const { showSpinner, hideSpinner } = useSpinner();
- const toast = useToast()
+  const toast = useToast();
 
-  const serverURL = "http://localhost:5000/"
-
+  const serverURL = "http://localhost:5000/";
 
   async function handleSubmit(e: any) {
     e.preventDefault();
@@ -61,16 +60,15 @@ export default function Home() {
       toast.toast({
         title: "Uh oh! Something went wrong.",
         description: "There was a problem with your request.",
-      })
+      });
       console.error("Error sending magnet link:", error);
     }
     hideSpinner();
-
   }
 
- async function handleDownload() {
-      // Getting link from input value
- const magnetLinkUrl = inputRef.current?.value ?? undefined;
+  async function handleDownload() {
+    // Getting link from input value
+    const magnetLinkUrl = inputRef.current?.value ?? undefined;
     try {
       showSpinner();
       const response = await fetch(serverURL + "download-torrent", {
@@ -86,8 +84,6 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         console.log("Success:", result);
-
-       
       } else {
         console.error("Failed to Download the file", response.statusText);
       }
@@ -95,7 +91,6 @@ export default function Home() {
       console.error("Error Downloading the file:", error);
     }
     hideSpinner();
-
   }
 
   return (
@@ -130,9 +125,10 @@ export default function Home() {
             <h2 className="text-xl font-semibold text-gray-800">
               Torrent Details
             </h2>
-            <p className="text-gray-700">
+            <div className="flex flex-col">
               <strong>Name:</strong> <i>{details.name}</i>
-            </p>
+              <strong>Size:</strong> <i>{details.size.toFixed(3)} GB</i>
+            </div>
             <div className="flex justify-between gap-4">
               <button
                 type="button"
@@ -150,8 +146,7 @@ export default function Home() {
             </div>
           </CardContent>
         </Card>
-       )} 
-      
+      )}
     </div>
   );
 }
