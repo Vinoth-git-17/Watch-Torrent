@@ -94,7 +94,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 flex flex-col gap-5 items-center justify-center p-4">
+    <div className="min-h-screen bg-[url('/gradient-bg.jpeg')] bg-cover bg-no-repeat bg-center flex flex-col gap-5 items-center justify-center p-4">
       <Card className="max-w-md w-full shadow-lg rounded-2xl">
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

@@ -1,7 +1,7 @@
 "use client";
 import { useRef } from "react";
 
-export default function VideoPlayer({ source }: { source: string }) {
+export default function VideoPlayer({ source, cssClass }: { source: string , cssClass?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   //Function to move 10s forward or backward
@@ -12,8 +12,8 @@ export default function VideoPlayer({ source }: { source: string }) {
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <video ref={videoRef} controls src={source} />
-    </div>
+    <>
+      <video ref={videoRef} className={cssClass} preload="metadata" controls src={source} />
+    </>
   );
 }
