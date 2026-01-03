@@ -1,12 +1,12 @@
-import VideoPlayer from '@/app/components/VideoPlayer';
-import React from 'react';
+import VideoPlayer from "@/app/components/VideoPlayer";
+import React, { use } from "react";
 
-const Page = ({ params }: { params: { infoHash: string } }) => {
-  const { infoHash } = params;
+const Page = ({ params }: { params: Promise<{ infoHash: string }> }) => {
+  const { infoHash } = use(params);
 
   return (
-    <div className='flex h-full justify-center items-center'>
-      <VideoPlayer cssClass='rounded-3xl' source={`http://localhost:5000/stream/${infoHash}`}/>
+    <div className="flex h-full justify-center items-center">
+      <VideoPlayer source={`http://localhost:5000/stream/${infoHash}`} />
     </div>
   );
 };

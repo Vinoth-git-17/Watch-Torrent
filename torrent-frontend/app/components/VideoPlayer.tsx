@@ -1,19 +1,40 @@
 "use client";
-import { useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import videojs from "video.js";
+import Player from "video.js/dist/types/player";
+import "video.js/dist/video-js.css";
 
-export default function VideoPlayer({ source, cssClass }: { source: string , cssClass?: string }) {
+interface VideoPlayerProps {
+  source: string;
+  cssClass?: string;
+}
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, cssClass }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<Player | null>(null);
 
-  //Function to move 10s forward or backward
-  const skipTime = (seconds: number) => {
+  useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.currentTime += seconds;
+      playerRef.current = videojs(videoRef.current, {
+        controls: true,
+        preload: "metadata",
+        controlBar: {
+          skipButtons: {
+            backward: 10, // Skip backward 10 seconds
+            forward: 10, // Skip forward 10 seconds
+          },
+        },
+      });
     }
-  };
+  }, [videoRef]);
 
   return (
-    <>
-      <video ref={videoRef} className={cssClass} preload="metadata" controls src={source} />
-    </>
+    <video
+      ref={videoRef}
+      className={`video-js ${cssClass}`}
+      src={source}
+      controls
+    ></video>
   );
-}
+};
+
+export default VideoPlayer;

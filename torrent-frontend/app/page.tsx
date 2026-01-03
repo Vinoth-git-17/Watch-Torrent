@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Card } from "./components/Card";
 import { CardContent } from "./components/CardContent";
 import { Button } from "./components/Button";
@@ -24,8 +24,8 @@ export default function Home() {
 
   const serverURL = "http://localhost:5000/";
 
-  async function handleSubmit(e: any) {
-    e.preventDefault();
+  async function handleSubmit(e: FormEvent<HTMLFormElement> | undefined) {
+    e?.preventDefault();
     // Getting link from input value
     const magnetLinkUrl = inputRef.current?.value ?? undefined;
     if (!magnetLinkUrl) {
