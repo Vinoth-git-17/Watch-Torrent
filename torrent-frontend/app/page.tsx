@@ -68,7 +68,7 @@ export default function Home() {
 
   async function handleDownload() {
     // Getting link from input value
-    const magnetLinkUrl = inputRef.current?.value ?? undefined;
+    const infoHash = details.infoHash;
     try {
       showSpinner();
       const response = await fetch(serverURL + "download-torrent", {
@@ -77,7 +77,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          magnetURI: magnetLinkUrl,
+          infoHash: infoHash,
         }),
       });
 

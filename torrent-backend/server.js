@@ -44,21 +44,55 @@ app.post("/add-torrent", (req, res) => {
   });
 });
 
-// TODO: Need to implement download torrent file
-app.post("/download-torrent", (req, res) => {
-  const { magnetURI } = req.body;
+function isVideoFormat(name) {
+  return name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm")
+}
 
-  if (!magnetURI) {
-    return res.status(400).json({ error: "Magnet URI is required" });
+// TODO: Need to implement download torrent file
+app.post("/download-torrent", async(req, res) => {
+  const { infoHash } = req.body;
+
+  if (!infoHash) {
+    return res.status(400).json({ error: "Info Hash is required" });
   }
 
-  client.add(magnetURI, (torrent) => {
-    const file = torrent.files.find(
-      (f) => f.name.endsWith(".mp4") || f.name.endsWith(".mkv")
-    );
-    if (!file) return res.status(404).json({ error: "No video file found" });
+  const webTorrent = client.get(infoHash);
+  if (!webTorrent) {
+    return res.status(404).json({ error: "Torrent not found" });
+  }
 
-    res.json({ name: file.name, size: file.length });
+  const file = await webTorrent
+    .then((torrent) =>  torrent.files.find(
+        (file) => isVideoFormat(file.name)
+      )
+    )
+    .catch((error) => res.status(404).json({ error }));
+
+  if (!file) return res.status(404).json({ error: "No video file found" });
+
+  res.setHeader("Content-Disposition", `attachment; filename="${file.name}"`);
+  res.setHeader(
+    "Content-Type",
+    file.name.endsWith(".mp4")
+      ? "video/mp4"
+      : file.name.endsWith(".mkv")
+      ? "video/mkv"
+      : "video/webm"
+  );
+  const stream = file.createReadStream();
+  stream.pipe(res);
+
+  stream.on("error", (streamErr) => {
+    console.error("Stream error:", streamErr);
+    if (!res.headersSent) {
+      res.status(500).end("Stream error: " + streamErr.message);
+    } else {
+      res.end();
+    }
+  });
+
+  res.on("close", () => {
+    stream.destroy(); // Ensure stream is destroyed if response is closed
   });
 });
 
@@ -67,7 +101,7 @@ app.get("/stream/:hash", async (req, res) => {
   if (!torrent) return res.status(404).json({ error: "Torrent not found" });
 
   const file = torrent.files.find(
-    (f) => f.name.endsWith(".mp4") || f.name.endsWith(".mkv")
+    (file) =>isVideoFormat(file.name)
   );
   if (!file) {
     return res.status(404).json({ error: "File not found" });
@@ -87,7 +121,11 @@ app.get("/stream/:hash", async (req, res) => {
     "Content-Range": `bytes ${start}-${end}/${total}`,
     "Accept-Ranges": "bytes",
     "Content-Length": chunksize,
-    "Content-Type": file.name.endsWith(".mp4") ? "video/mp4" : "video/mkv",
+    "Content-Type": file.name.endsWith(".mp4")
+      ? "video/mp4"
+      : file.name.endsWith(".mkv")
+      ? "video/mkv"
+      : "video/webm",
   });
 
   const stream = file.createReadStream({ start, end });
