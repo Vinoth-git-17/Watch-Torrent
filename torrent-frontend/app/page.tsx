@@ -29,7 +29,7 @@ export default function Home() {
     // Getting link from input value
     const magnetLinkUrl = inputRef.current?.value ?? undefined;
     if (!magnetLinkUrl) {
-      alert("Please enter the magnet link");
+      toast.toast({title : "Please enter the magnet link"});
       return;
     }
 
@@ -50,18 +50,17 @@ export default function Home() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Success:", result);
-
+      toast.toast({
+        title: `Magnet link processed successfully`,
+      });
         setDetails(result);
       } else {
-        console.error("Failed to send magnet link:", response.statusText);
+        toast.toast({title : `Failed to retrieve data from server: ${response.statusText}`});
       }
     } catch (error) {
       toast.toast({
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request.",
+        title: `Error sending magnet link: ${error}`,
       });
-      console.error("Error sending magnet link:", error);
     }
     hideSpinner();
   }
@@ -86,10 +85,10 @@ export default function Home() {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
       } else {
-        console.error("Failed to Download the file", response.statusText);
+       toast.toast({title: `Failed to Download the file ${response.statusText}`});
       }
     } catch (error) {
-      console.error("Error Downloading the file:", error);
+     toast.toast({title: `Error Downloading the file: ${error}`});
     }
     hideSpinner();
   }
@@ -151,13 +150,13 @@ export default function Home() {
                   >
                     Stream
                   </Link>
-                         <button
+                         {/* <button
                     type="button"
                     className="flex-1 text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800 transition duration-150 ease-in-out"
                     onClick={()=>openInVLC(details.infoHash)}
                   >
                     VLC
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </>

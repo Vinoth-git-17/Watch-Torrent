@@ -157,7 +157,6 @@ app.get('/:infoHash', asyncHandler(async (req, res) => {
   stream.pipe(res);
 
   stream.on('error', (err) => {
-    console.error('Stream error:', err);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Stream error' });
     }
@@ -195,12 +194,10 @@ app.get('/vlc/:infoHash', asyncHandler(async (req, res) => {
     stream.pipe(res);
     
     stream.on('error', (err) => {
-      console.error('VLC stream error:', err);
       if (!res.headersSent) res.status(500).end();
     });
     
     req.on('close', () => {
-      console.log(`VLC client disconnected: ${infoHash}`);
       stream.destroy();
     });
     return;
@@ -221,13 +218,10 @@ app.get('/vlc/:infoHash', asyncHandler(async (req, res) => {
   stream.pipe(res);
 
   stream.on('error', (err) => {
-    console.error('VLC range stream error:', err);
     if (!res.headersSent) res.status(500).end();
   });
 
   req.on('close', () => stream.destroy());
-  
-  console.log(`🎬 VLC streaming ${file.name} (${chunksize} bytes from ${start})`);
 }));
 
 
@@ -250,7 +244,6 @@ app.post('/download/:infoHash', asyncHandler(async (req, res) => {
   stream.pipe(res);
 
   stream.on('error', (err) => {
-    console.error('Download stream error:', err);
     if (!res.headersSent) res.status(500).end();
   });
 
@@ -267,7 +260,6 @@ function getContentType(filename) {
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('Shutting down...');
   for (const data of torrents.values()) {
     data.torrent.destroy();
   }
@@ -276,6 +268,5 @@ process.on('SIGINT', () => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 WebTorrent Server running on http://localhost:${PORT}`);
-  console.log(`📊 Status: http://localhost:${PORT}/status`);
+  console.log(`🚀 WebTorrent Server running on http://localhost:${PORT}`);;
 });
