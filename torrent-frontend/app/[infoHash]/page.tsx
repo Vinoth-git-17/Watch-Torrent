@@ -6,7 +6,7 @@ const Page = ({ params }: { params: Promise<{ infoHash: string }> }) => {
 
   return (
     <div className="flex h-full justify-center items-center">
-      <VideoPlayer source={`http://localhost:5000/stream/${infoHash}`} />
+      <VideoPlayer source={`http://localhost:5000/${infoHash}`} />
     </div>
   );
 };

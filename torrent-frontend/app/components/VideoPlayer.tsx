@@ -30,7 +30,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ source, cssClass }) => {
   return (
     <video
       ref={videoRef}
-      className={`video-js ${cssClass}`}
+      className={`video-js vjs-fluid vjs-16-9 ${cssClass}`}
       src={source}
       controls
     ></video>

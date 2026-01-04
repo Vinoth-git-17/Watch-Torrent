@@ -33,7 +33,7 @@ app.post("/add-torrent", (req, res) => {
     const details = {
       name: torrent.name,
       infoHash: torrent.infoHash,
-      size: torrent.length / GB_IN_BYTES,
+      sizeGB: torrent.length / GB_IN_BYTES,
     };
     res.json(details);
   });
@@ -45,11 +45,13 @@ app.post("/add-torrent", (req, res) => {
 });
 
 function isVideoFormat(name) {
-  return name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm")
+  return (
+    name.endsWith(".mp4") || name.endsWith(".mkv") || name.endsWith(".webm")
+  );
 }
 
 // TODO: Need to implement download torrent file
-app.post("/download-torrent", async(req, res) => {
+app.post("/download-torrent", async (req, res) => {
   const { infoHash } = req.body;
 
   if (!infoHash) {
@@ -62,10 +64,7 @@ app.post("/download-torrent", async(req, res) => {
   }
 
   const file = await webTorrent
-    .then((torrent) =>  torrent.files.find(
-        (file) => isVideoFormat(file.name)
-      )
-    )
+    .then((torrent) => torrent.files.find((file) => isVideoFormat(file.name)))
     .catch((error) => res.status(404).json({ error }));
 
   if (!file) return res.status(404).json({ error: "No video file found" });
@@ -96,13 +95,13 @@ app.post("/download-torrent", async(req, res) => {
   });
 });
 
-app.get("/stream/:hash", async (req, res) => {
-  const torrent = await client.get(req.params.hash);
+
+app.get("/:hash", async (req, res) => {
+  const infoHash = req.params.hash
+  const torrent = await client.get(infoHash);
   if (!torrent) return res.status(404).json({ error: "Torrent not found" });
 
-  const file = torrent.files.find(
-    (file) =>isVideoFormat(file.name)
-  );
+  const file = torrent.files.find((file) => isVideoFormat(file.name));
   if (!file) {
     return res.status(404).json({ error: "File not found" });
   }
@@ -140,11 +139,12 @@ app.get("/stream/:hash", async (req, res) => {
   });
 
   stream.pipe(res);
-
   res.on("close", () => {
     stream.destroy(); // Ensure stream is destroyed if response is closed
   });
-});
+})
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
